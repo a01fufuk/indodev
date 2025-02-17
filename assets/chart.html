@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Organization Hierarchy</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f9f9f9;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      h1 {
+        text-align: center;
+        margin-top: 20px;
+        color: #333;
+      }
+
+      /* Main container */
+      .org-tree {
+        width: 80%;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      /* General list styles */
+      ul {
+        list-style-type: none;
+        padding-left: 20px;
+        margin: 0;
+      }
+      li {
+        margin: 8px 0;
+      }
+
+      /* Collapsible section */
+      .collapsible {
+        cursor: pointer;
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+      }
+
+      /* Icon for collapsible */
+      .collapsible::before {
+        content: "▶";
+        font-size: 1.2rem;
+        margin-right: 10px;
+        color: #007bff;
+      }
+
+      .collapsible.expanded::before {
+        content: "▼";
+      }
+
+      .nested {
+        display: block; /* Default expanded */
+        margin-left: 20px;
+      }
+
+      /* No children message */
+      .no-children {
+        font-size: 0.9rem;
+        color: #888;
+        margin-left: 30px;
+        font-style: italic;
+      }
+
+      /* Button styles */
+      .btn {
+        margin-left: 10px;
+        padding: 5px 10px;
+        font-size: 0.9rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+      .btn-delete {
+        background-color: #ff4d4d;
+        color: white;
+      }
+      .btn-delete:hover {
+        background-color: #e60000;
+      }
+
+      /* Add and Edit Buttons at the top */
+      .btn-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin: 20px;
+      }
+
+      .btn-add,
+      .btn-edit {
+        padding: 12px 18px;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .btn-add {
+        background-color: #28a745;
+        color: white;
+      }
+
+      .btn-add:hover {
+        background-color: #218838;
+      }
+
+      .btn-edit {
+        background-color: #007bff;
+        color: white;
+      }
+
+      .btn-edit:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="btn-container">
+      <button class="btn-add" onclick="window.location.href='/add-division'">
+        Add Division
+      </button>
+      <button class="btn-edit" onclick="window.location.href='/edit'">
+        Edit Divisions
+      </button>
+    </div>
+    <h1>Organization Hierarchy</h1>
+    <div id="orgTree" class="org-tree"></div>
+
+    <script>
+      // Function to build the hierarchy tree recursively with collapsible functionality
+      function buildTree(data) {
+        if (!data) return "";
+
+        let html = "<ul>";
+        data.forEach((item) => {
+          // Check if the division has children
+          let hasChildren = item.children && item.children.length > 0;
+
+          html += `
+                    <li>
+                        <span class="collapsible">${item.name} (${
+            item.divisionCode
+          })</span>
+                        ${
+                          hasChildren
+                            ? `
+                            <div class="nested">
+                                ${buildTree(item.children)}
+                            </div>
+                        `
+                            : `
+                            <span class="no-children">No children</span>
+                            <button class="btn btn-delete" onclick="deleteDivision('${item.divisionCode}')">Delete</button>
+                        `
+                        }
+                    </li>
+                `;
+        });
+        html += "</ul>";
+        return html;
+      }
+
+      // Add event listeners for collapsible sections
+      function addCollapsibleListeners() {
+        const collapsibles = document.querySelectorAll(".collapsible");
+        collapsibles.forEach((collapsible) => {
+          collapsible.addEventListener("click", function () {
+            const nestedDiv = this.nextElementSibling;
+            const isExpanded =
+              nestedDiv &&
+              nestedDiv.classList.contains("nested") &&
+              nestedDiv.style.display === "block";
+            nestedDiv.style.display = isExpanded ? "none" : "block";
+            this.classList.toggle("expanded", !isExpanded);
+          });
+        });
+      }
+
+      // Handle delete action
+      function deleteDivision(divisionCode) {
+        if (
+          confirm(`Are you sure you want to delete division ${divisionCode}?`)
+        ) {
+          fetch("http://localhost:15096/division/delete", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ divisionCode: divisionCode }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              alert(data.message || "Division deleted successfully!");
+              // Optionally, you can refresh the tree after successful deletion
+              location.reload(); // This will reload the page and re-fetch the hierarchy
+            })
+            .catch((error) => {
+              alert("Error deleting division. Please try again.");
+              console.error("Error:", error);
+            });
+        }
+      }
+
+      // Fetch data from the API using POST method
+      fetch("http://localhost:15096/division/list-hirarki", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}), // Add any necessary data here in the body if required by the API
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data && data.result) {
+            const orgTreeHtml = buildTree(data.result);
+            document.getElementById("orgTree").innerHTML = orgTreeHtml;
+            addCollapsibleListeners(); // Enable collapsible behavior after tree is rendered
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching the data:", error);
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+package constans
+
+const (
+	SUCCESS_CODE = "101"
+	PENDING_CODE = "102"
+	FAILED_CODE  = "103"
+
+	// Error berhubungan dengan data
+	DATA_NOT_FOUND_CODE  = "201"
+	VALIDATE_ERROR_CODE  = "202"
+	DUPLICATE_ERROR_CODE = "203"
+	NOSTOCK_ERROR_CODE   = "204"
+
+	SYSTEM_ERROR_CODE    = "501"
+	UNDEFINED_ERROR_CODE = "502"
+
+	EMPTY_VALUE = ""
+
+	EMPTY_VALUE_INT = 0
+	TRUE_VALUE      = true
+	FALSE_VALUE     = false
+
+	MINIBMS_PORT_COLLECTION   = "minibms_port_col"
+	MINIBMS_AGENT_COLLECTION  = "minibms_agent_col"
+	MINIBMS_ILCS_MANIFEST_LOG = "ilcs_manifest_log_col"
+	MINIBMS_ILCS_SCHEDULE_LOG = "ilcs_schedule_log_col"
+	MINI_BMS_SHIP_COLLECTION  = "mini_bms_ship_col"
+
+	OPERATOR_ID_MKP = "11015014"
+
+	BATAM_SUCCESS_CODE = 200
+	// LAYOUT DATE
+	LAYOUT_TIMESTAMP        = "2006-01-02 15:04:05"
+	LAYOUT_TIMESTAMP_ILCS   = "02/01/2006 15:04:05"
+	LAYOUT_TIME             = "15:04:05"
+	LAYOUT_TIMESTAMP_GOLANG = "2006-01-02T15:04:05Z"
+	LAYOUT_DATE             = "2006-01-02"
+	LAYOUT_CODE_1           = "060102150405"
+	LAYOUT_CODE_2           = "200601"
+	LAYOUT_CODE_DATE        = "20060102"
+	LAYOUT_CODE_3           = "20060102150405"
+	LAYOUT_CODE_4           = "200601021504"
+
+	BASIC_AUTH = "Basic bWtwbW9iaWxlOm1rcG1vYmlsZTEyMw=="
+)

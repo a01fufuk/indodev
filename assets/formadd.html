@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Division</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f7f6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .container {
+        background-color: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 1.5rem;
+      }
+      label {
+        display: block;
+        font-size: 1rem;
+        color: #555;
+        margin-bottom: 0.5rem;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 0.8rem;
+        margin-bottom: 1.2rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-bottom: 1rem;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .alert {
+        padding: 1rem;
+        margin-top: 1rem;
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        display: none;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .cancel-button {
+        background-color: #6c757d;
+      }
+      .cancel-button:hover {
+        background-color: #5a6268;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Add Division</h1>
+      <form id="addDivisionForm">
+        <label for="divisionCode">Division Code:</label>
+        <input
+          type="text"
+          id="divisionCode"
+          name="divisionCode"
+          placeholder="Enter division code"
+          required
+        /><br />
+
+        <label for="name">Name:</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Enter division name"
+          required
+        /><br />
+
+        <label for="divisionParentCode">Division Parent Code:</label>
+        <select id="divisionParentCode" name="divisionParentCode" required>
+          <option value="">Select Division Parent</option></select
+        ><br />
+
+        <button type="submit">Add Division</button>
+        <button
+          type="button"
+          class="cancel-button"
+          onclick="window.location.href='/org'"
+        >
+          Return to Organization
+        </button>
+      </form>
+
+      <div id="alertMessage" class="alert"></div>
+    </div>
+
+    <script>
+      // Fetch division list for the parent division select dropdown using POST method
+      fetch("http://localhost:15096/division/list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}), // If the API expects an empty body, we send it as an empty object
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success && data.result) {
+            const divisionParentSelect =
+              document.getElementById("divisionParentCode");
+            data.result.forEach((division) => {
+              if (division.divisionParentCode !== "") {
+                // Only include divisions with parent code
+                const option = document.createElement("option");
+                option.value = division.divisionCode;
+                option.textContent = division.name;
+                divisionParentSelect.appendChild(option);
+              }
+            });
+          } else {
+            showAlert("Failed to load division list", "error");
+          }
+        })
+        .catch((error) => {
+          showAlert("Error fetching division list", "error");
+          console.error(error);
+        });
+
+      // Handle form submission
+      document
+        .getElementById("addDivisionForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Prevents the form from refreshing the page
+
+          const divisionCode = document.getElementById("divisionCode").value;
+          const name = document.getElementById("name").value;
+          const divisionParentCode =
+            document.getElementById("divisionParentCode").value;
+
+          const data = {
+            divisionCode,
+            name,
+            divisionParentCode,
+          };
+
+          fetch("http://localhost:15096/division/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                showAlert("Division added successfully!", "success");
+              } else {
+                showAlert("Error adding division", "error");
+              }
+            })
+            .catch((error) => {
+              showAlert("Error adding division!", "error");
+              console.error(error);
+            });
+        });
+
+      function showAlert(message, type) {
+        const alertMessage = document.getElementById("alertMessage");
+        alertMessage.textContent = message;
+        alertMessage.classList.remove("success", "error");
+        alertMessage.classList.add(type === "success" ? "success" : "error");
+        alertMessage.style.display = "block";
+      }
+    </script>
+  </body>
+</html>
